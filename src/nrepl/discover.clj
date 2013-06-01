@@ -61,9 +61,9 @@
   (filter :status (map meta (vals (ns-interns (symbol namespace))))))
 
 (defn- overlay-for [{:keys [status line]}]
-  (cond (some (comp #{:fail} first) status) ["red" line ""]
-        (some (comp #{:error} first) status) ["orange" line ""]
-        :else ["green" line ""]))
+  (cond (some (comp #{:fail} first) status) ["red" line]
+        (some (comp #{:error} first) status) ["orange" line]
+        :else ["green" line]))
 
 (defn summary-response [msg ns summary results]
   (let [message (if (pos? (+ (:error summary) (:fail summary)))
