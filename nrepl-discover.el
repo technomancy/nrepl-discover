@@ -22,7 +22,8 @@
 
 (defun nrepl-discover-overlay (overlay)
   (save-excursion
-    (destructuring-bind (color line message) overlay
+    ;; TODO: support optional file arg here
+    (destructuring-bind (color line) overlay
       (goto-char (point-min))
       (forward-line (1- line))
       (let ((beg (point)))
@@ -40,7 +41,7 @@
                                               text url)
         (when message
           (message message))
-        (when text
+        (when text ; TODO: test
           (with-current-buffer (format "*nrepl-text*")
             (let ((inhibit-read-only t))
               (delete-region (point-min) (point-max))
@@ -53,6 +54,7 @@
         (when url
           (browse-url url))
         (when clear-overlays
+          ;; TODO: support optional buffer arg
           (with-current-buffer buffer
             (remove-overlays)))
         (when overlay
@@ -74,18 +76,20 @@
 
 (defun nrepl-discover-argument (arg)
   (list (car arg) (case (intern (cadr arg))
+                    ;; we already have this implicit in nrepl msgs; needed here?
                     ('ns '(if current-prefix-arg
                               (read-from-minibuffer "Namespace: ")
                             (clojure-find-ns)))
-                    ('region '(list (point) (mark)))
+                    ('region '(list buffer-file-name (point) (mark))) ; untested
                     ('var '(nrepl-discover-choose-var (clojure-find-ns)))
-                    ('file '(if current-prefix-arg
+                    ('file '(if current-prefix-arg ; untested
                                 (ido-read-file-name)
-                                buffer-file-name))
-                    ('position '(format "%s:%s" buffer-file-name (point)))
-                    ('list `(completing-read ,(or (nth 2 arg)
+                              buffer-file-name))
+                    ('position '(format "%s:%s" buffer-file-name (point))) ; untested
+                    ('list `(completing-read ,(or (nth 2 arg) ; untested
                                                   (concat (nth 0 arg) ": "))
                                              ,(nth 3 arg)))
+                    ;; TODO: eval type
                     (t `(read-from-minibuffer
                          ,(or (nth 2 arg)
                               (concat (nth 0 arg) ": ")))))))
@@ -106,6 +110,7 @@
                  (nrepl-make-response-handler
                   (current-buffer)
                   (lambda (_ value)
+                    ;; TODO: prevent nrepl-discover from overwriting itself
                     (dolist (op value)
                       ;; for some reason the 'dict car needs to be stripped
                       (eval (nrepl-discover-command-for (cdr op)))))
