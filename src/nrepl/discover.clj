@@ -14,8 +14,6 @@
                  [(:name (:nrepl/op (meta v))) v]))))
 
 (defn- ^{:nrepl/op {:name "discover"
-                    ;; TODO: uncommenting this breaks nrepl.el; augh
-                    ;; :arglist []
                     :doc "Discover known operations."}}
   discover [{:keys [transport] :as msg}]
   (t/send transport (m/response-for msg :status :done :value
@@ -27,7 +25,7 @@
   (fn [msg] ((@ops (:op msg) handler) msg)))
 
 ;; example nrepl op for tools.trace
-(defn ^{:nrepl/op {:name "toggle-trace" :arglist [["var" "var" "Trace: "]]
+(defn ^{:nrepl/op {:name "toggle-trace" :args [["var" "var" "Trace: "]]
                    :doc "Toggle tracing of a given var."}}
   nrepl-op
   [{:keys [transport var] :as msg}]
@@ -39,13 +37,13 @@
         (if (-> v meta :clojure.tools.trace/traced)
           (do (trace/untrace-var* v)
               (send transport (response-for msg :status :done
-                                            :value (str var " untraced."))))
+                                            :message (str var " untraced."))))
           (do (trace/trace-var* v)
               (send transport (response-for msg :status :done
-                                            :value (str var " traced.")))))
+                                            :message (str var " traced.")))))
         (send transport (response-for msg :status #{:error :done}
-                                      :value "no such var")))
+                                      :message "no such var")))
       (catch Exception e
         (#'trace/tracer "Error" (.getMessage e))
         (send transport (response-for msg :status #{:error :done}
-                                      :value (.getMessage e)))))))
+                                      :message (.getMessage e)))))))
