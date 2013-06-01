@@ -65,7 +65,8 @@
 
 (defun nrepl-discover-choose-var (ns)
   (let ((nrepl-discover-var nil)) ; poor man's promises
-    (nrepl-ido-read-var ns (lambda (var) (setq nrepl-discover-var var)))
+    (nrepl-ido-read-var (or ns "user")
+                        (lambda (var) (setq nrepl-discover-var var)))
     ;; async? more like ehsync.
     (while (not nrepl-discover-var)
       (sit-for 0.01))
