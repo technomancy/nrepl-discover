@@ -36,3 +36,5 @@ Lots to do:
 * Determine whose responsibility it is to load namespaces containing nrepl ops so they can be discovered.
 
 * Implement for other editors
+
+* Unload-ns op

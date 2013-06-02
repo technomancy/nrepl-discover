@@ -53,6 +53,9 @@
           (nrepl-emit-output buffer err t))
         (when url
           (browse-url url))
+        ;; TODO: support position
+        ;; (with-current-buffer buffer
+        ;;   (ring-insert find-tag-marker-ring (point-marker)))
         (when clear-overlays
           ;; TODO: support optional buffer arg
           (with-current-buffer buffer
@@ -81,6 +84,7 @@
                               (read-from-minibuffer "Namespace: ")
                             (clojure-find-ns)))
                     ('region '(list buffer-file-name (point) (mark))) ; untested
+                    ;; TODO: default to current defn
                     ('var '(nrepl-discover-choose-var (clojure-find-ns)))
                     ('file '(if current-prefix-arg ; untested
                                 (ido-read-file-name)

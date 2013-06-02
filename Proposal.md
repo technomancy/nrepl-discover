@@ -42,9 +42,6 @@ should be in the third position.
 * `eval` - Evaluate the form in the fourth position and use the return
   value as the argument specification.
 
-TODO: distinguish between "current X" and "choose an X" where X can be
-a file, region, var-at-point, etc.
-
 ## Responses
 
 When an op is invoked, it can result in any number of response maps
@@ -59,6 +56,9 @@ support.
   displayed in its own window or pane.
 
 * `url` - A URL to either display directly or open in a browser.
+
+* `position` - A string including the filename followed by a colon and
+  a character offset.
 
 * `overlay` - An indicator to mark a given line with a certain
   color. Should be a list consisting of a color, a line number, and
