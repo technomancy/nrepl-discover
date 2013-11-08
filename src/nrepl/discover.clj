@@ -19,8 +19,7 @@
   discover [{:keys [transport] :as msg}]
   (t/send transport (m/response-for msg :status :done :value
                                     (for [[_ op-var] @ops]
-                                      (-> op-var meta :nrepl/op
-                                          w/stringify-keys)))))
+                                      (-> op-var meta :nrepl/op)))))
 
 (defn wrap-discover [handler]
   (fn [msg] ((@ops (:op msg) handler) msg)))
@@ -72,6 +71,8 @@
       (t/send (:transport msg) (m/response-for msg :overlay (overlay-for r))))
     (t/send (:transport msg) (m/response-for msg :status :done
                                              :message message))))
+
+;; TODO: stdout here is still System/out, not repl-specific *out*
 
 (defn ^{:nrepl/op {:name "run-tests"
                    :doc "Run tests for a namespace"}}

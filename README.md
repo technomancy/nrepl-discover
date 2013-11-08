@@ -10,6 +10,13 @@ implementation of a toggle-trace nrepl operation using
 [tools.trace](https://github.com/clojure/tools.trace) as well as an
 operation for running `clojure.test` tests.
 
+Place this in your `:user` profile:
+
+```clj
+:dependencies [[nrepl-discover "0.0.1"]]
+:repl-options {:nrepl-middleware [nrepl.discover/wrap-discover]}
+```
+
 With the `nrepl-discover.el` elisp included, it's possible to run `M-x
 nrepl-discover` on an active nREPL session for this project, which
 results in the creation of commands for every var which has
@@ -28,6 +35,8 @@ same functionality could be ported to other editors like Vim and
 CounterClockwise.
 
 Lots to do:
+
+* How would completion work with this?
 
 * Figure out what response types to support beyond strings
  * file edits? (or just make the edit server-side and tell client to refresh)
