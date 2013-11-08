@@ -38,7 +38,7 @@
     (lambda (response)
       (nrepl-dbind-response response (message ns out err status id ex root-ex
                                               session overlay clear-overlays
-                                              text url)
+                                              text url reload)
         (when message
           (message message))
         (when text ; TODO: test
@@ -53,6 +53,12 @@
           (nrepl-emit-output buffer err t))
         (when url
           (browse-url url))
+        (when reload
+          (let ((b (find-buffer-visiting reload)))
+            (message "Found %s to revert." b)
+            (when b
+              (with-current-buffer b
+                (revert-buffer)))))
         ;; TODO: support position
         ;; (with-current-buffer buffer
         ;;   (ring-insert find-tag-marker-ring (point-marker)))
@@ -86,9 +92,11 @@
                     ('region '(list buffer-file-name (point) (mark))) ; untested
                     ;; TODO: default to current defn
                     ('var '(nrepl-discover-choose-var (clojure-find-ns)))
-                    ('file '(if current-prefix-arg ; untested
-                                (ido-read-file-name)
-                              buffer-file-name))
+                    ('file '(progn
+                              (save-some-buffers)
+                              (if current-prefix-arg ; untested
+                                  (ido-read-file-name)
+                                buffer-file-name)))
                     ('position '(format "%s:%s" buffer-file-name (point))) ; untested
                     ('list `(completing-read ,(or (nth 2 arg) ; untested
                                                   (concat (nth 0 arg) ": "))

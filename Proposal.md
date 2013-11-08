@@ -69,6 +69,9 @@ support.
   can be a file in which to remove overlays; if nil is given then it
   means use the file from which the operation was invoked.
 
+* `reload` - Instructs the editor to reload a given file, assuming an
+  edit has been performed server-side.
+
 * `edit` - Perform edits on a file. TODO: details.
 
 A single response map may contain any of these as well as standard
