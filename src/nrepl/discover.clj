@@ -7,18 +7,18 @@
 
 (declare discover)
 
-(def ops
-  (delay (into {"discover" #'discover}
-               (for [n (all-ns)
-                     [_ v] (ns-publics n)
-                     :when (:nrepl/op (meta v))]
-                 [(:name (:nrepl/op (meta v))) v]))))
+(defn ops []
+  (into {"discover" #'discover}
+        (for [n (all-ns)
+              [_ v] (ns-publics n)
+              :when (:nrepl/op (meta v))]
+          [(:name (:nrepl/op (meta v))) v])))
 
 (defn- ^{:nrepl/op {:name "discover"
                     :doc "Discover known operations."}}
   discover [{:keys [transport] :as msg}]
   (t/send transport (m/response-for msg :status :done :value
-                                    (for [[_ op-var] @ops]
+                                    (for [[_ op-var] (ops)]
                                       (-> op-var meta :nrepl/op)))))
 
 (defn wrap-discover [handler]
