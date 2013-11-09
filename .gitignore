@@ -1,3 +1,4 @@
 /.lein-repl-history
 /target
 /pom.xml
+/pom.xml.asc
