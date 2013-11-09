@@ -5,6 +5,13 @@ corresponding client-side auto-generated commands.
 
 For background, see [this thread](https://groups.google.com/group/clojure-tools/browse_thread/thread/c08b628a9af8346d).
 
+An nREPL operation can be any piece of functionality performed
+server-side that would be convenient to expose from the editor. For
+example, you can run the tests you're editing by switching to the REPL
+and calling `clojure.test/run-tests`, but it's more convenient to have
+an editor command you can invoke directly and bind to whatever
+keystroke you like.
+
 There are really three distinct parts to this:
 
 * A server-side nREPL middleware to find metadata all available
