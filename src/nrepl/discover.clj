@@ -1,6 +1,7 @@
 (ns nrepl.discover
   (:require [clojure.tools.nrepl.transport :as t]
             [clojure.tools.nrepl.misc :as m]
+            [clojure.tools.nrepl.middleware.session :as ses]
             [clojure.tools.trace :as trace]
             [clojure.test :as test]
             [clojure.string :as s]
@@ -25,8 +26,14 @@
                                     (for [[_ op-var] (ops)]
                                       (-> op-var meta :nrepl/op)))))
 
-(defn wrap-discover [handler]
-  (fn [msg] ((@ops (:op msg) handler) msg)))
+(defn ^{:clojure.tools.nrepl.middleware/descriptor {:requires #{#'ses/session}}}
+  wrap-discover [handler]
+  (fn [{:keys [op session] :as msg}]
+    (if-let [discovered-handler ((ops) op)]
+      (try (push-thread-bindings @session)
+           (discovered-handler msg)
+           (finally (pop-thread-bindings)))
+      (handler msg))))
 
 ;; example nrepl op for tools.trace
 (defn ^{:nrepl/op {:name "toggle-trace" :args [["var" "var" "Trace: "]]
