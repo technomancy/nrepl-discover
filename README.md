@@ -5,10 +5,22 @@ corresponding client-side auto-generated commands.
 
 For background, see [this thread](https://groups.google.com/group/clojure-tools/browse_thread/thread/c08b628a9af8346d).
 
-Currently implemented as an nrepl middleware with a reference
-implementation of a toggle-trace nrepl operation using
-[tools.trace](https://github.com/clojure/tools.trace) as well as an
-operation for running `clojure.test` tests.
+There are really three distinct parts to this:
+
+* A server-side nREPL middleware to find metadata all available
+  operations and expose them to clients.
+* A set of clients (currently only one) implementing a compiler of
+  operation metadata -> editor commands.
+* A predetermined vocabulary (see `Proposal.md`) for acceptable
+  argument types and return values that nREPL operations may use and
+  clients should support.
+
+As a proof-of-concept it includes a reference implementation of a
+`toggle-trace` operation using
+[tools.trace](https://github.com/clojure/tools.trace) as well as a
+couple operations for running `clojure.test` tests.
+
+## Usage
 
 Place this in your `:user` profile:
 
@@ -19,7 +31,7 @@ Place this in your `:user` profile:
 
 With the `nrepl-discover.el` elisp included, it's possible to run `M-x
 nrepl-discover` on an active nREPL session for this project, which
-results in the creation of commands for every var which has
+results in the creation of commands for every loaded var which has
 `:nrepl/op` metadata attached.
 
 There are a few sample ops including `toggle-trace` and `run-tests`
