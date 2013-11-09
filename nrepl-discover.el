@@ -1,3 +1,45 @@
+;;; nrepl-discover.el --- Client to load commands from nrepl server
+
+;; Copyright © 2013 Phil Hagelberg
+;;
+;; Author: Phil Hagelberg <technomancy@gmail.com>
+;; URL: http://github.com/technomancy/nrepl-discover
+;; Version: 0.0.1
+;; Keywords: languages, lisp
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This library is a client for Clojure nREPL servers which offer up
+;; certain operations as commands which can be invoked client-side.
+
+;; Upon running M-x nrepl-discover, it will query the connected server
+;; for operations and use the return value to construct new
+;; interactive defuns corresponding to each server-side operation
+;; which prompt appropriately for the given types desired. They also
+;; understand how to respond to certain predetermined editor-side
+;; response types.
+
+;;; License:
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License
+;; as published by the Free Software Foundation; either version 3
+;; of the License, or (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+;; Boston, MA 02110-1301, USA.
+
+;;; Code:
+
 (require 'nrepl)
 
 (defvar nrepl-discover-namespaces '()
@@ -110,6 +152,10 @@
                               (concat (nth 0 arg) ": ")))))))
 
 (defun nrepl-discover-command-for (op)
+  "Construct a defun command form for `OP'.
+
+Argument should be an alist with \"name\", \"doc\", and \"args\" keys as per
+the nrepl-discover docs."
   `(defun ,(intern (concat "nrepl-" (assoc-default "name" op))) ()
      ,(assoc-default "doc" op)
      (interactive)

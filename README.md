@@ -1,6 +1,6 @@
 # nREPL discovery
 
-Proof-of-concept implementation for nREPL auto-discovered ops and
+System for declaring auto-discovered nREPL operations and
 corresponding client-side auto-generated commands.
 
 For background, see [this thread](https://groups.google.com/group/clojure-tools/browse_thread/thread/c08b628a9af8346d).
@@ -24,7 +24,7 @@ results in the creation of commands for every var which has
 
 There are a few sample ops including `toggle-trace` and `run-tests`
 which invoke `tools.trace` and `clojure.test` functionality
-respectively. Once the discovery has run
+respectively.
 
 For Emacs usage you would typically invoke `nrepl-discover` from
 `nrepl-connected-hook` and define key bindings for
@@ -34,16 +34,27 @@ code is included as a reference implementation; the hope is that the
 same functionality could be ported to other editors like Vim and
 CounterClockwise.
 
-Lots to do:
+# Lots to do
 
 * How would completion work with this?
 
-* Figure out what response types to support beyond strings
- * file edits? (or just make the edit server-side and tell client to refresh)
- * what does the inspector need? (html? how do we represent hyperlink targets?)
-
-* Determine whose responsibility it is to load namespaces containing nrepl ops so they can be discovered.
+* What does the inspector need? (html? how do we represent hyperlink targets?)
 
 * Implement for other editors
 
 * Unload-ns op
+
+* Replace as many nrepl.el commands as possible
+ * `jump-to-definition`
+ * `macroexpand-1` / `macroexpand-all`
+ * `doc`
+ * `javadoc`
+
+## License
+
+Copyright © 2013 Phil Hagelberg and contributors
+
+Emacs Lisp code distributed under the GNU General Public License,
+either version 3 or (at your option) any later version.
+
+Everything else distributed under the Eclipse Public License, the same as Clojure.
