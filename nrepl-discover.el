@@ -1,5 +1,8 @@
 (require 'nrepl)
 
+(defvar nrepl-discover-namespaces '()
+  "A list of Clojure namespace symbols containing discoverable operations.")
+
 ;; copied from nrepl-make-response-handler because that's a monolithic ball
 (defun nrepl-discover-status (status)
   (when (member "interrupted" status)
@@ -118,12 +121,22 @@
 (defun nrepl-discover ()
   "Query nREPL server for operations and define Emacs commands for them."
   (interactive)
-  (nrepl-send-op "discover" ()
-                 (nrepl-make-response-handler
-                  (current-buffer)
-                  (lambda (_ value)
-                    ;; TODO: prevent nrepl-discover from overwriting itself
-                    (dolist (op value)
-                      ;; for some reason the 'dict car needs to be stripped
-                      (eval (nrepl-discover-command-for (cdr op)))))
-                  nil nil nil nil)))
+  (let ((requires (list "requires" (mapconcat 'symbol-name
+                                              nrepl-discover-namespaces " "))))
+    (nrepl-send-op "discover" requires
+                   (nrepl-make-response-handler
+                    (current-buffer)
+                    (lambda (_ value)
+                      (dolist (op value)
+                        (when (not (string= "nrepl-discover"
+                                            (assoc-default "name" (cdr op))))
+                          ;; for some reason the 'dict car needs to be stripped
+                          (eval (nrepl-discover-command-for (cdr op)))))
+                      (message "Loaded nrepl-discover commands: %s."
+                               (mapconcat (lambda (op)
+                                            (assoc-default "name" (cdr op)))
+                                          ops ", ")))
+                    nil nil nil nil))))
+
+(provide 'nrepl-discover)
+;;; nrepl-discover.el ends here

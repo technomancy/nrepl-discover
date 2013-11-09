@@ -3,6 +3,7 @@
             [clojure.tools.nrepl.misc :as m]
             [clojure.tools.trace :as trace]
             [clojure.test :as test]
+            [clojure.string :as s]
             [clojure.walk :as w]))
 
 (declare discover)
@@ -16,7 +17,10 @@
 
 (defn- ^{:nrepl/op {:name "discover"
                     :doc "Discover known operations."}}
-  discover [{:keys [transport] :as msg}]
+  discover [{:keys [transport requires] :as msg}]
+  (when requires
+    (doseq [r (s/split requires #" ")]
+      (require (symbol r))))
   (t/send transport (m/response-for msg :status :done :value
                                     (for [[_ op-var] (ops)]
                                       (-> op-var meta :nrepl/op)))))
