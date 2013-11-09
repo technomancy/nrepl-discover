@@ -13,7 +13,7 @@ operation for running `clojure.test` tests.
 Place this in your `:user` profile:
 
 ```clj
-:dependencies [[nrepl-discover "0.0.1"]]
+:dependencies [[nrepl-discover "0.1.0"]]
 :repl-options {:nrepl-middleware [nrepl.discover/wrap-discover]}
 ```
 
