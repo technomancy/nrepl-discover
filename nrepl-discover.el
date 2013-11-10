@@ -42,9 +42,6 @@
 
 (require 'nrepl)
 
-(defvar nrepl-discover-namespaces '()
-  "A list of Clojure namespace symbols containing discoverable operations.")
-
 ;; copied from nrepl-make-response-handler because that's a monolithic ball
 (defun nrepl-discover-status (status)
   (when (member "interrupted" status)
@@ -164,25 +161,29 @@ the nrepl-discover docs."
                                     (assoc-default "args" op)))
                     (nrepl-discover-op-handler (current-buffer)))))
 
+(defvar nrepl-discovered-ops nil
+  "List of ops discovered by the last `nrepl-discover' run.")
+
 (defun nrepl-discover ()
   "Query nREPL server for operations and define Emacs commands for them."
   (interactive)
-  (let ((requires (list "requires" (mapconcat 'symbol-name
-                                              nrepl-discover-namespaces " "))))
-    (nrepl-send-op "discover" requires
-                   (nrepl-make-response-handler
-                    (current-buffer)
-                    (lambda (_ value)
-                      (dolist (op value)
-                        (when (not (string= "nrepl-discover"
-                                            (assoc-default "name" (cdr op))))
-                          ;; for some reason the 'dict car needs to be stripped
-                          (eval (nrepl-discover-command-for (cdr op)))))
-                      (message "Loaded nrepl-discover commands: %s."
-                               (mapconcat (lambda (op)
-                                            (assoc-default "name" (cdr op)))
-                                          ops ", ")))
-                    nil nil nil nil))))
+  (setq nrepl-discovered-ops nil)
+  (nrepl-send-op "discover" ()
+                 (nrepl-make-response-handler
+                  (current-buffer)
+                  (lambda (_ value)
+                    (dolist (op value)
+                      (when (not (string= "nrepl-discover"
+                                          (assoc-default "name" (cdr op))))
+                        ;; for some reason the 'dict car needs to be stripped
+                        (eval (nrepl-discover-command-for (cdr op)))))
+                    (add-to-list 'nrepl-discovered-ops
+                                 (assoc-default "name" (cdr op)))
+                    (message "Loaded nrepl-discover commands: %s."
+                             (mapconcat (lambda (op)
+                                          (assoc-default "name" (cdr op)))
+                                        ops ", ")))
+                  nil nil nil nil)))
 
 (provide 'nrepl-discover)
 ;;; nrepl-discover.el ends here

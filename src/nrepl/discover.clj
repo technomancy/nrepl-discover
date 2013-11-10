@@ -18,10 +18,7 @@
 
 (defn- ^{:nrepl/op {:name "discover"
                     :doc "Discover known operations."}}
-  discover [{:keys [transport requires] :as msg}]
-  (when requires
-    (doseq [r (s/split requires #" ")]
-      (require (symbol r))))
+  discover [{:keys [transport] :as msg}]
   (t/send transport (m/response-for msg :status :done :value
                                     (for [[_ op-var] (ops)]
                                       (-> op-var meta :nrepl/op)))))

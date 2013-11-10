@@ -36,14 +36,10 @@ Place this in your `:user` profile:
 :repl-options {:nrepl-middleware [nrepl.discover/wrap-discover]}
 ```
 
-With the `nrepl-discover.el` elisp included, it's possible to run `M-x
-nrepl-discover` on an active nREPL session for this project, which
-results in the creation of commands for every loaded var which has
-`:nrepl/op` metadata attached.
-
-There are a few sample ops including `toggle-trace` and `run-tests`
-which invoke `tools.trace` and `clojure.test` functionality
-respectively.
+With the `nrepl-discover.el` elisp package, (installable from
+Marmalade) it's possible to run `M-x nrepl-discover` on an active
+nREPL session for this project, which results in the creation of
+commands for every loaded var which has `:nrepl/op` metadata attached.
 
 For Emacs usage you would typically invoke `nrepl-discover` from
 `nrepl-connected-hook` and define key bindings for
