@@ -80,7 +80,7 @@
     (lambda (response)
       (nrepl-dbind-response response (message ns out err status id ex root-ex
                                               session overlay clear-overlays
-                                              text url reload)
+                                              text url html reload)
         (when message
           (message message))
         (when text ; TODO: test
@@ -108,11 +108,45 @@
           ;; TODO: support optional buffer arg
           (with-current-buffer buffer
             (remove-overlays)))
+        ;; TODO: use mime types instead of just looking at html key
+        (when html
+          (nrepl-render-html html))
         (when overlay
           (with-current-buffer buffer
             (nrepl-discover-overlay overlay)))
         (when status
           (nrepl-discover-status status))))))
+
+(defun nrepl-render-html (html)
+  (when (not (require 'shr nil t))
+    (error "Missing shr HTML renderer."))
+  (with-current-buffer (get-buffer-create "*nrepl-html-raw*")
+    (erase-buffer)
+    (insert html))
+  (pop-to-buffer "*nrepl-html*")
+  (let ((inhibit-read-only t))
+    (erase-buffer)
+    (shr-insert-document
+     (with-current-buffer "*nrepl-html-raw*"
+       (libxml-parse-html-region (point-min) (point-max)))))
+  (lexical-let ((old-browse browse-url-browser-function))
+    (set (make-local-variable 'browse-url-browser-function)
+         (apply-partially 'nrepl-browse old-browse)))
+  (goto-char (point-min))
+  (read-only-mode) ; TODO: this does nothing
+  (local-set-key (kbd "q") 'bury-buffer))
+
+;; kind of a terrible monkeypatch in order to add support for nrepl:// scheme
+(defun nrepl-browse (original-browse-url url _)
+  (if (string-match "^nrepl://\\(.+\\)/\\?\\(.+\\)" url)
+      (let ((op (match-string 1 url))
+            (query-string (match-string 2 url)))
+        (nrepl-send-op op (car (url-parse-query-string query-string))
+                       (nrepl-discover-op-handler (current-buffer))))
+    (let ((browse-url-browser-function original-browse-url))
+      (browse-url url))))
+
+(nrepl-browse 'browse-url-generic uuu nil)
 
 (defvar nrepl-discover-var nil)
 
