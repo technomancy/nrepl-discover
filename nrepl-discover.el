@@ -160,27 +160,29 @@
     (concat nrepl-ido-ns "/" nrepl-discover-var)))
 
 (defun nrepl-discover-argument (arg)
-  (list (car arg) (case (intern (cadr arg))
-                    ;; we already have this implicit in nrepl msgs; needed here?
-                    ('ns '(if current-prefix-arg
-                              (read-from-minibuffer "Namespace: ")
-                            (clojure-find-ns)))
-                    ('region '(list buffer-file-name (point) (mark))) ; untested
-                    ;; TODO: default to current defn
-                    ('var '(nrepl-discover-choose-var (clojure-find-ns)))
-                    ('file '(progn
-                              (save-some-buffers)
-                              (if current-prefix-arg ; untested
-                                  (ido-read-file-name)
-                                buffer-file-name)))
-                    ('position '(format "%s:%s" buffer-file-name (point))) ; untested
-                    ('list `(completing-read ,(or (nth 2 arg) ; untested
-                                                  (concat (nth 0 arg) ": "))
-                                             ,(nth 3 arg)))
-                    ;; TODO: eval type
-                    (t `(read-from-minibuffer
-                         ,(or (nth 2 arg)
-                              (concat (nth 0 arg) ": ")))))))
+  (destructuring-bind (name type prompt) arg
+    (list name (case (intern type)
+                 ('string `(read-from-minibuffer ,prompt))
+                 ;; we already have this implicit in nrepl msgs; needed here?
+                 ('ns '(if current-prefix-arg
+                           (read-from-minibuffer "Namespace: ")
+                         (clojure-find-ns)))
+                 ('region '(list buffer-file-name (point) (mark))) ; untested
+                 ;; TODO: default to current defn
+                 ('var '(nrepl-discover-choose-var (clojure-find-ns)))
+                 ('file '(progn
+                           (save-some-buffers)
+                           (if current-prefix-arg ; untested
+                               (ido-read-file-name)
+                             buffer-file-name)))
+                 ('position '(format "%s:%s" buffer-file-name (point))) ; untested
+                 ('list `(completing-read ,(or (nth 2 arg) ; untested
+                                               (concat (nth 0 arg) ": "))
+                                          ,(nth 3 arg)))
+                 ;; TODO: eval type
+                 (t `(read-from-minibuffer
+                      ,(or (nth 2 arg)
+                           (concat (nth 0 arg) ": "))))))))
 
 (defun nrepl-discover-command-for (op)
   "Construct a defun command form for `OP'.
