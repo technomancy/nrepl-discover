@@ -97,10 +97,10 @@
           (browse-url url))
         (when reload
           (let ((b (find-buffer-visiting reload)))
-            (message "Found %s to revert." b)
-            (when b
-              (with-current-buffer b
-                (revert-buffer)))))
+            (if b
+                (with-current-buffer b
+                  (revert-buffer))
+              (find-file reload))))
         ;; TODO: support position
         ;; (with-current-buffer buffer
         ;;   (ring-insert find-tag-marker-ring (point-marker)))
