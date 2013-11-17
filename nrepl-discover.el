@@ -146,7 +146,6 @@
     (let ((browse-url-browser-function original-browse-url))
       (browse-url url))))
 
-(nrepl-browse 'browse-url-generic uuu nil)
 
 (defvar nrepl-discover-var nil)
 
