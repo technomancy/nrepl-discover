@@ -173,7 +173,7 @@
                            (if current-prefix-arg ; untested
                                (ido-read-file-name)
                              buffer-file-name)))
-                 ('position '(format "%s:%s" buffer-file-name (point))) ; untested
+                 ('position '(list buffer-file-name (point))) ; untested
                  ('list `(completing-read ,(or (nth 2 arg) ; untested
                                                (concat (nth 0 arg) ": "))
                                           ,(nth 3 arg)))

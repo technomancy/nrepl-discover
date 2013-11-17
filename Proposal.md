@@ -33,8 +33,7 @@ should be in the third position.
 
 * `file` - Any file.
 
-* `position` - A string including the filename followed by a colon and
-  a character offset.
+* `position` - A list of the filename and a character offset as an integer.
 
 * `list` - Choose from a list of predetermined strings. This list is
   in the fourth position of the argument vector.
@@ -57,8 +56,7 @@ support.
 
 * `url` - A URL to either display directly or open in a browser.
 
-* `position` - A string including the filename followed by a colon and
-  a character offset.
+* `position` - A list of a filename and a character offset as an integer.
 
 * `overlay` - An indicator to mark a given line with a certain
   color. Should be a list consisting of a color, a line number, and
