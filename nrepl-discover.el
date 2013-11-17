@@ -129,23 +129,22 @@
     (shr-insert-document
      (with-current-buffer "*nrepl-html-raw*"
        (libxml-parse-html-region (point-min) (point-max)))))
-  (lexical-let ((old-browse browse-url-browser-function))
-    (set (make-local-variable 'browse-url-browser-function)
-         (apply-partially 'nrepl-browse old-browse)))
+  (make-local-variable 'browse-url-browser-function)
+  (if (symbolp browse-url-browser-function)
+      (setq browse-url-browser-function
+            `(("^/" . nrepl-browse) ; host-relative URLs
+              ("." . ,browse-url-browser-function)))
+    (add-to-list browse-url-browser-function '("^/" . nrepl-browse)))
   (goto-char (point-min))
-  (read-only-mode) ; TODO: this does nothing
+  (read-only-mode)
   (local-set-key (kbd "q") 'bury-buffer))
 
-;; kind of a terrible monkeypatch in order to add support for nrepl:// scheme
-(defun nrepl-browse (original-browse-url url _)
-  (if (string-match "^nrepl://\\(.+\\)/\\?\\(.+\\)" url)
-      (let ((op (match-string 1 url))
-            (query-string (match-string 2 url)))
-        (nrepl-send-op op (car (url-parse-query-string query-string))
-                       (nrepl-discover-op-handler (current-buffer))))
-    (let ((browse-url-browser-function original-browse-url))
-      (browse-url url))))
-
+(defun nrepl-browse (url &rest _)
+  (string-match "^/\\(.+\\)\\?\\(.+\\)" url)
+  (let ((op (match-string 1 url))
+        (query-string (match-string 2 url)))
+    (nrepl-send-op op (car (url-parse-query-string query-string))
+                   (nrepl-discover-op-handler (current-buffer)))))
 
 (defvar nrepl-discover-var nil)
 
