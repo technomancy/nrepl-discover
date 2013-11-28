@@ -48,6 +48,8 @@ being sent asynchronously via `clojure.tools.nrepl.transport/send`.
 There are certain keys in response maps which clients should try to
 support.
 
+TODO: re-frame this in terms of content-type
+
 * `message` - A one- or two-line string to be displayed to the user in
   a transient way.
 
@@ -69,6 +71,8 @@ support.
 
 * `reload` - Instructs the editor to reload a given file, assuming an
   edit has been performed server-side.
+
+* `images` - PNG, JPG, SVG, you name it.
 
 * `edit` - Perform edits on a file. TODO: details.
 

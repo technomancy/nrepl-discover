@@ -65,6 +65,8 @@ CounterClockwise.
  * `doc`
  * `javadoc`
 
+* Add clojuredocs commands
+
 ## License
 
 Copyright © 2013 Phil Hagelberg and contributors
