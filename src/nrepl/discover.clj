@@ -167,3 +167,9 @@
                                     :value "It is clear now, as it was not at first, why Illich reacted with such horror to my saying that we should push the walls of the school building out further and further. That seemed at the time a good enough way to say that we should abolish the distinction between learning and the rest of life. Only later did I see the danger that he saw right away. Think again about the global schoolhouse, madhouse, prison. What are madhouses and prisons? They are institutions of compulsory treatment...
 
 A global schoolhouse would be a world, which we seem to be moving toward, in which one group of people would have the right through our entire lives to subject the rest of us to various sorts of tests, and if we did not measure up, to require us to submit to various kinds of treatment, i.e. education, therapy, etc., until we did. A worse nightmare is hard to imagine.")))
+
+(defn ^{:nrepl/op {:name "clj"
+                   :doc "just some clojure source"}}
+  clj-op [{:keys [transport] :as msg}]
+  (t/send transport (m/response-for msg :content-type "application/clojure"
+                                    :value (prn-str '(defn ohai [x] (* x x))))))
