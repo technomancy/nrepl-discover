@@ -142,6 +142,17 @@
     (t/send transport (m/response-for msg :content-type "image/jpeg"
                                       :value (b64/encode (.toByteArray baos))))))
 
+(defn ^{:nrepl/op {:name "jpeg-inline"
+                   :args [["file" "file" "File: "]]
+                   :doc "show a jay peg"}}
+  jpeg-inline-op [{:keys [transport file] :as msg}]
+  (let [baos (java.io.ByteArrayOutputStream.)
+        f (io/file file)
+        _ (io/copy f baos)]
+    (t/send transport (m/response-for msg :content-type "image/jpeg"
+                                      :content-disposition "inline"
+                                      :value (b64/encode (.toByteArray baos))))))
+
 (defn ^{:nrepl/op {:name "text"
                    :doc "just some text"}}
   text-op [{:keys [transport] :as msg}]
