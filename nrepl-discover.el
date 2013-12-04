@@ -91,6 +91,13 @@ the nrepl-discover docs."
 (defvar nrepl-discovered-ops nil
   "List of ops discovered by the last `nrepl-discover' run.")
 
+(defun nrepl-discover-make-command (op)
+  (when (not (string= "nrepl-discover"
+                      (assoc-default "name" (cdr op))))
+    (eval (nrepl-discover-command-for (cdr op)))
+    (add-to-list 'nrepl-discovered-ops
+                 (assoc-default "name" (cdr op)))))
+
 (defun nrepl-discover ()
   "Query nREPL server for operations and define Emacs commands for them."
   (interactive)
@@ -100,16 +107,9 @@ the nrepl-discover docs."
                   (current-buffer)
                   (lambda (_ value)
                     (dolist (op value)
-                      (when (not (string= "nrepl-discover"
-                                          (assoc-default "name" (cdr op))))
-                        ;; for some reason the 'dict car needs to be stripped
-                        (eval (nrepl-discover-command-for (cdr op)))))
-                    (add-to-list 'nrepl-discovered-ops
-                                 (assoc-default "name" (cdr op)))
+                      (nrepl-discover-make-command op))
                     (message "Loaded nrepl-discover commands: %s."
-                             (mapconcat (lambda (op)
-                                          (assoc-default "name" (cdr op)))
-                                        ops ", ")))
+                             (mapconcat 'identity nrepl-discovered-ops ", ")))
                   nil nil nil nil)))
 
 (provide 'nrepl-discover)
