@@ -4,4 +4,5 @@
                  [org.clojure/tools.trace "0.7.5"]
                  [org.clojure/clojure "1.5.1"]
                  [org.clojure/data.codec "0.1.0"]]
-  :repl-options {:nrepl-middleware [nrepl.discover/wrap-discover]})
+  :repl-options {:nrepl-middleware [nrepl.discover/wrap-discover]
+                 :init (require 'nrepl.discover.samples)})

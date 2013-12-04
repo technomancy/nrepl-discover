@@ -28,6 +28,9 @@ There are really three distinct parts to this:
   argument declarations and content-types for responses that nREPL
   operations may use and clients should support.
 
+This project is still under rapid development and should not be
+considered stable.
+
 ## Usage
 
 Place this in your `:user` profile:
