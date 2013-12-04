@@ -61,7 +61,6 @@ CounterClockwise.
 
 * Replace as many nrepl.el commands as possible
  * `unload-ns`
- * `jump-to-definition`
  * `macroexpand-1` / `macroexpand-all`
  * `doc`
  * `javadoc`

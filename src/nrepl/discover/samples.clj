@@ -66,7 +66,6 @@
                    :doc "Run tests for a namespace"}}
   run-tests
   [{:keys [transport file ns] :as msg}]
-  (prn :file file) ; TODO: file arg isn't passed in properly
   (try
     (t/send transport (m/response-for msg :content-type "editor/overlay"
                                       :overlay [file "clear"]))
@@ -157,3 +156,15 @@ A global schoolhouse would be a world, which we seem to be moving toward, in whi
   (t/send transport (m/response-for msg :content-type "application/clojure"
                                     :value (prn-str '(defn ohai [x] (* x x))))))
 
+(defn ^{:nrepl/op {:name "jump-to"
+                   :args [["var" "var" "Var: "]]
+                   :doc "Jump to the definition of a var."}}
+  jump-to [{:keys [transport ns var] :as msg}]
+  ;; TODO: support resources, skip file-less vars
+  (let [[file line] ((juxt (comp str io/file :file) :line)
+                     (meta (resolve (symbol var))))
+        position (with-open [rdr (io/reader file)]
+                   (reduce + line
+                           (map count (take (dec line) (line-seq rdr)))))]
+    (t/send transport (m/response-for msg :content-type "editor/position"
+                                      :value [file position]))))
