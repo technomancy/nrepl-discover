@@ -1,9 +1,9 @@
 # nREPL discovery
 
-System for declaring auto-discovered nREPL operations and
-corresponding client-side auto-generated commands.
+Proof-of-concept design for declaring auto-discovered nREPL operations
+and corresponding client-side auto-generated commands.
 
-For background, see [this thread](https://groups.google.com/group/clojure-tools/browse_thread/thread/c08b628a9af8346d).
+For background, see [this thread](https://groups.google.com/group/clojure-tools/browse_thread/thread/c08b628a9af8346d) and [this one too](https://groups.google.com/forum/#!topic/clojure-tools/rkmJ-5086RY).
 
 An nREPL operation can be any piece of functionality performed
 server-side that would be convenient to expose from the editor. For
@@ -12,6 +12,12 @@ and calling `clojure.test/run-tests`, but it's more convenient to have
 an editor command you can invoke directly and bind to whatever
 keystroke you like.
 
+See `src/nrepl/discover/sample.clj` for some samples of what
+user-defined ops can do. As a proof-of-concept it includes a reference
+implementation of a `toggle-trace` operation using
+[tools.trace](https://github.com/clojure/tools.trace) as well as a
+couple operations for running `clojure.test` tests.
+
 There are really three distinct parts to this:
 
 * A server-side nREPL middleware to find metadata all available
@@ -19,13 +25,8 @@ There are really three distinct parts to this:
 * A set of clients (currently only one) implementing a compiler of
   operation metadata -> editor commands.
 * A predetermined vocabulary (see `Proposal.md`) for acceptable
-  argument types and return values that nREPL operations may use and
-  clients should support.
-
-As a proof-of-concept it includes a reference implementation of a
-`toggle-trace` operation using
-[tools.trace](https://github.com/clojure/tools.trace) as well as a
-couple operations for running `clojure.test` tests.
+  argument declarations and content-types for responses that nREPL
+  operations may use and clients should support.
 
 ## Usage
 
@@ -33,13 +34,18 @@ Place this in your `:user` profile:
 
 ```clj
 :dependencies [[nrepl-discover "0.1.0"]]
-:repl-options {:nrepl-middleware [nrepl.discover/wrap-discover]}
+:repl-options {:nrepl-middleware [nrepl.discover/wrap-discover]
+               :init (require 'nrepl.discover.sample)}
 ```
 
 With the `nrepl-discover.el` elisp package, (installable from
 Marmalade) it's possible to run `M-x nrepl-discover` on an active
 nREPL session for this project, which results in the creation of
 commands for every loaded var which has `:nrepl/op` metadata attached.
+
+In order to handle the response values, you currently need to run from
+the `content-types` branch of
+[Cider](https://github.com/clojure-emacs/cider).
 
 For Emacs usage you would typically invoke `nrepl-discover` from
 `nrepl-connected-hook` and define key bindings for
@@ -51,21 +57,17 @@ CounterClockwise.
 
 # Lots to do
 
-* How would completion work with this?
-
-* What does the inspector need? (html? how do we represent hyperlink targets?)
-
-* Implement for other editors
-
-* Unload-ns op
+* Could this be used to implement completion? (need a new content-type?)
 
 * Replace as many nrepl.el commands as possible
+ * `unload-ns`
  * `jump-to-definition`
  * `macroexpand-1` / `macroexpand-all`
  * `doc`
  * `javadoc`
+ * `clojuredocs`
 
-* Add clojuredocs commands
+* Implement for other editors
 
 ## License
 

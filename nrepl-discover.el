@@ -4,7 +4,7 @@
 ;;
 ;; Author: Phil Hagelberg <technomancy@gmail.com>
 ;; URL: http://github.com/technomancy/nrepl-discover
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Keywords: languages, lisp
 
 ;; This file is not part of GNU Emacs.
@@ -17,9 +17,7 @@
 ;; Upon running M-x nrepl-discover, it will query the connected server
 ;; for operations and use the return value to construct new
 ;; interactive defuns corresponding to each server-side operation
-;; which prompt appropriately for the given types desired. They also
-;; understand how to respond to certain predetermined editor-side
-;; response types.
+;; which prompt appropriately for the given types desired.
 
 ;;; License:
 
@@ -40,122 +38,19 @@
 
 ;;; Code:
 
-(require 'nrepl)
-
-;; copied from nrepl-make-response-handler because that's a monolithic ball
-(defun nrepl-discover-status (status)
-  (when (member "interrupted" status)
-    (message "Evaluation interrupted."))
-  (when (member "eval-error" status)
-    (funcall nrepl-err-handler buffer ex root-ex session))
-  (when (member "namespace-not-found" status)
-    (message "Namespace not found."))
-  (when (member "need-input" status)
-    (nrepl-need-input buffer))
-  (when (member "done" status)
-    (remhash id nrepl-requests)))
-
-(defun nrepl-discover-face (color)
-  (let ((face-name (intern (concat "nrepl-discover-" color "-face"))))
-    (when (not (symbol-file face-name 'defface))
-      (custom-declare-face face-name `((default . (:background ,color)))
-                           (concat "Face for nrepl " color " overlays")))
-    face-name))
-
-(defun nrepl-discover-overlay (overlay)
-  (save-excursion
-    ;; TODO: support optional file arg here
-    (destructuring-bind (color line) overlay
-      (goto-char (point-min))
-      (forward-line (1- line))
-      (let ((beg (point)))
-        (end-of-line)
-        (let ((overlay (make-overlay beg (point))))
-          (overlay-put overlay 'face (nrepl-discover-face color))
-          (when message
-            (overlay-put overlay 'message message)))))))
-
-(defun nrepl-discover-op-handler (buffer)
-  (lexical-let ((buffer buffer))
-    (lambda (response)
-      (nrepl-dbind-response response (message ns out err status id ex root-ex
-                                              session overlay clear-overlays
-                                              text url html reload)
-        (when message
-          (message message))
-        (when text ; TODO: test
-          (with-current-buffer (format "*nrepl-text*")
-            (let ((inhibit-read-only t))
-              (delete-region (point-min) (point-max))
-              (insert text))
-            (setq buffer-read-only t)))
-        (when out
-          (nrepl-emit-output buffer out t))
-        (when err
-          (nrepl-emit-output buffer err t))
-        (when url
-          (browse-url url))
-        (when reload
-          (let ((b (find-buffer-visiting reload)))
-            (if b
-                (with-current-buffer b
-                  (revert-buffer))
-              (find-file reload))))
-        ;; TODO: support position
-        ;; (with-current-buffer buffer
-        ;;   (ring-insert find-tag-marker-ring (point-marker)))
-        (when clear-overlays
-          ;; TODO: support optional buffer arg
-          (with-current-buffer buffer
-            (remove-overlays)))
-        ;; TODO: use mime types instead of just looking at html key
-        (when html
-          (nrepl-render-html html))
-        (when overlay
-          (with-current-buffer buffer
-            (nrepl-discover-overlay overlay)))
-        (when status
-          (nrepl-discover-status status))))))
-
-(defun nrepl-render-html (html)
-  (when (not (require 'shr nil t))
-    (error "Missing shr HTML renderer."))
-  (with-current-buffer (get-buffer-create "*nrepl-html-raw*")
-    (erase-buffer)
-    (insert html))
-  (pop-to-buffer "*nrepl-html*")
-  (let ((inhibit-read-only t))
-    (erase-buffer)
-    (shr-insert-document
-     (with-current-buffer "*nrepl-html-raw*"
-       (libxml-parse-html-region (point-min) (point-max)))))
-  (make-local-variable 'browse-url-browser-function)
-  (if (symbolp browse-url-browser-function)
-      (setq browse-url-browser-function
-            `(("^/" . nrepl-browse) ; host-relative URLs
-              ("." . ,browse-url-browser-function)))
-    (add-to-list browse-url-browser-function '("^/" . nrepl-browse)))
-  (goto-char (point-min))
-  (read-only-mode)
-  (local-set-key (kbd "q") 'bury-buffer))
-
-(defun nrepl-browse (url &rest _)
-  (string-match "^/\\(.+\\)\\?\\(.+\\)" url)
-  (let ((op (match-string 1 url))
-        (query-string (match-string 2 url)))
-    (nrepl-send-op op (car (url-parse-query-string query-string))
-                   (nrepl-discover-op-handler (current-buffer)))))
+(require 'cider-client)
+(require 'nrepl-client)
 
 (defvar nrepl-discover-var nil)
 
 (defun nrepl-discover-choose-var (ns)
   (let ((nrepl-discover-var nil)) ; poor man's promises
-    (nrepl-ido-read-var (or ns "user")
+    (cider-ido-read-var (or ns "user")
                         (lambda (var) (setq nrepl-discover-var var)))
     ;; async? more like ehsync.
     (while (not nrepl-discover-var)
       (sit-for 0.01))
-    (concat nrepl-ido-ns "/" nrepl-discover-var)))
+    (concat cider-ido-ns "/" nrepl-discover-var)))
 
 (defun nrepl-discover-argument (arg)
   (destructuring-bind (name type prompt) arg
@@ -166,7 +61,6 @@
                            (read-from-minibuffer "Namespace: ")
                          (clojure-find-ns)))
                  ('region '(list buffer-file-name (point) (mark))) ; untested
-                 ;; TODO: default to current defn
                  ('var '(nrepl-discover-choose-var (clojure-find-ns)))
                  ('file '(progn
                            (save-some-buffers)
@@ -190,10 +84,9 @@ the nrepl-discover docs."
   `(defun ,(intern (concat "nrepl-" (assoc-default "name" op))) ()
      ,(assoc-default "doc" op)
      (interactive)
-     (nrepl-send-op ,(assoc-default "name" op)
+     (cider-send-op ,(assoc-default "name" op)
                     (list ,@(mapcan 'nrepl-discover-argument
-                                    (assoc-default "args" op)))
-                    (nrepl-discover-op-handler (current-buffer)))))
+                                    (assoc-default "args" op))))))
 
 (defvar nrepl-discovered-ops nil
   "List of ops discovered by the last `nrepl-discover' run.")
@@ -202,7 +95,7 @@ the nrepl-discover docs."
   "Query nREPL server for operations and define Emacs commands for them."
   (interactive)
   (setq nrepl-discovered-ops nil)
-  (nrepl-send-op "discover" ()
+  (cider-send-op "discover" ()
                  (nrepl-make-response-handler
                   (current-buffer)
                   (lambda (_ value)
