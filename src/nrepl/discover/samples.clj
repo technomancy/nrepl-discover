@@ -103,13 +103,13 @@
 
 (defn ^{:nrepl/op {:name "run-test"
                    ;; TODO: need to get the list of deftests at runtime; eep
-                   :args [["test" "var" "Test: "]]
+                   :args [["test" "var" "Test: "] ["file" "file" "File: "]]
                    :doc "Run a single test."}}
   run-test
-  [{:keys [transport test ns] :as msg}]
+  [{:keys [transport test file ns] :as msg}]
   (try
     (t/send transport (m/response-for msg :content-type "editor/overlay"
-                                      :overlay [(file-for-ns ns) "clear"]))
+                                      :overlay [file "clear"]))
     (let [summary (with-redefs [test/report (partial report test/report)]
                     (test-one ns test))]
       (summary-response msg ns summary [(meta (resolve (symbol test)))]))
