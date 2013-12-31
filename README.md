@@ -12,7 +12,7 @@ and calling `clojure.test/run-tests`, but it's more convenient to have
 an editor command you can invoke directly and bind to whatever
 keystroke you like.
 
-See `src/nrepl/discover/sample.clj` for some samples of what
+See `src/nrepl/discover/samples.clj` for some samples of what
 user-defined ops can do. As a proof-of-concept it includes a reference
 implementation of a `toggle-trace` operation using
 [tools.trace](https://github.com/clojure/tools.trace) as well as a
@@ -38,7 +38,7 @@ Place this in your `:user` profile:
 ```clj
 :dependencies [[nrepl-discover "0.1.0"]]
 :repl-options {:nrepl-middleware [nrepl.discover/wrap-discover]
-               :init (require 'nrepl.discover.sample)}
+               :init (require 'nrepl.discover.samples)}
 ```
 
 With the `nrepl-discover.el` elisp package, (installable from
